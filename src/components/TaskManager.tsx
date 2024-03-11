@@ -2,6 +2,10 @@ import { nanoid } from "nanoid";
 import { useState } from "react";
 import "./TaskManager.css";
 
+interface Task{
+  id: string;
+  title: string;
+}
 // TODO: create custom hook to manage task state
 export const TaskManager = () => {
   const [title, setTitle] = useState("");
