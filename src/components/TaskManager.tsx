@@ -1,60 +1,96 @@
-import { nanoid } from "nanoid";
 import { useState } from "react";
+import { nanoid } from "nanoid";
 import "./TaskManager.css";
 
-interface Task{
+// Modèle de tâche
+interface Task {
   id: string;
   title: string;
 }
-// TODO: create custom hook to manage task state
-export const TaskManager = () => {
-  const [title, setTitle] = useState("");
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [tasks, setTasks] = useState([]);
 
-  // remove task from list
-  const completeTask = (id) => {
+// Hook personnalisé pour gérer l'état des tâches
+const useTaskManager = () => {
+  const [title, setTitle] = useState<string>("");
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  // Supprimer une tâche de la liste
+  const completeTask = (id: string) => {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  const updateTask = (id, taskUpdate) => {
-    const newTasks = tasks.slice();
-
-    const index = tasks.findIndex((task) => task.id === id);
-
-    newTasks[index] = taskUpdate;
-
+  // Mettre à jour une tâche dans la liste
+  const updateTask = (id: string, taskUpdate: Partial<Task>) => {
+    const newTasks = tasks.map((task) =>
+      task.id === id ? { ...task, ...taskUpdate } : task
+    );
     setTasks(newTasks);
   };
 
+  // Ajouter une nouvelle tâche
   const addTask = () => {
     if (title.length < 1) {
       return;
     }
 
-    const newTask = {
-      // using nanoid to generate unique id
+    const newTask: Task = {
       id: nanoid(),
       title,
     };
-    setTasks((prev) => prev.concat(newTask));
+    setTasks([...tasks, newTask]);
     setTitle("");
   };
 
-  const handleSearch = (ev) => {
+  // Gérer la recherche de tâches
+  const handleSearch = (ev: React.ChangeEvent<HTMLInputElement>) => {
     setSearchKeyword(ev.target.value);
   };
 
+  // Filtrer les tâches en fonction du mot-clé de recherche
   const filteredTasks = tasks.filter((task) =>
-    task.title.toLowerCase().includes(searchKeyword.toLowerCase()),
+    task.title.toLowerCase().includes(searchKeyword.toLowerCase())
   );
+
+  return {
+    title,
+    setTitle,
+    searchKeyword,
+    setSearchKeyword,
+    tasks,
+    completeTask,
+    updateTask,
+    addTask,
+    handleSearch,
+    filteredTasks,
+  };
+};
+
+// Composant TaskManager
+export const TaskManager = () => {
+  const {
+    title,
+    setTitle,
+    searchKeyword,
+    setSearchKeyword,
+    tasks,
+    completeTask,
+    updateTask,
+    addTask,
+    handleSearch,
+    filteredTasks,
+  } = useTaskManager();
 
   return (
     <div className="container">
       <h1>Task Manager</h1>
 
       <div>
-        <input type="text" onChange={handleSearch} placeholder="Search Task" />
+        <input
+          type="text"
+          onChange={handleSearch}
+          placeholder="Search Task"
+          value={searchKeyword}
+        />
       </div>
 
       <div className="task">
